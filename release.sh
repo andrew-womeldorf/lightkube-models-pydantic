@@ -1,14 +1,15 @@
+set -ex
 if [[ ! -z "$1" ]]; then
   VERSIONS=$1   # provide version without `v`
 else
   VERSIONS=$(awk '/([0-9]+.[0-9]+.[0-9]+)/ {print $2}' .github/workflows/python-package.yml)
-  rm dist/*.whl dist/*.tar.gz
+  rm -rf build/ dist/
 fi
 
 for v in $VERSIONS; do
   MAIN_VERSION=$(echo $v | cut -d. -f1,2 )
   echo "Building v$v"
-  rm lightkube/models/*
+  rm -rf lightkube/models/*
   python -m lightkube-generate resources models openapi/kubernetes_v$v.json --docs docs
   python test_models.py
   python test_resources.py
@@ -16,8 +17,8 @@ for v in $VERSIONS; do
   python setup.py sdist
   python setup.py bdist_wheel
   python setup.py sdist
-  python -m mkdocs build -d site/$MAIN_VERSION
-  #twine upload dist/lightkube_models-pydantic-${v}.*-py3-none-any.whl -r $1
-  ls dist/lightkube_models-pydantic-${v}.*-py3-none-any.whl
+  #python -m mkdocs build -d site/$MAIN_VERSION
+  ls dist/lightkube_models_pydantic-${v}.*-py3-none-any.whl
   ls dist/lightkube-models-pydantic-${v}.*.tar.gz
+  twine upload dist/lightkube_models_pydantic-${v}.*-py3-none-any.whl -r $TWINE_REPOSITORY
 done
