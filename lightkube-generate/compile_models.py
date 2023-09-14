@@ -99,6 +99,22 @@ def build_tests(testdir, modules):
             fw.write(f"from lightkube.models import {module}\n")
 
 
+def reorder_models(models: List[Model]) -> List[Model]:
+    data = {m.name: m for m in models}
+    reordered_data = {}
+
+    def add_dependencies(key):
+        if key not in reordered_data:
+            for dep in data[key].internal_dependencies:
+                add_dependencies(dep)
+            reordered_data[key] = data[key]
+
+    for key in data:
+        add_dependencies(key)
+
+    return list(reordered_data.values())
+
+
 def execute(fname, path: Path, testdir: Path, docsdir: Path, compiler_major: str):
     with open(fname) as f:
         sw = json.load(f)
@@ -109,6 +125,12 @@ def execute(fname, path: Path, testdir: Path, docsdir: Path, compiler_major: str
     for name, defi in sw["definitions"].items():
         model = Model(name, defi)
         modules[model.module].append(model)
+
+
+    # For each module, reorder the models based on dependencies
+    for module, models in modules.items():
+        modules[module] = reorder_models(models)
+
 
     if not docsdir.exists():
         docsdir.mkdir()

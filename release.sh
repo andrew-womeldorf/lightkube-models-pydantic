@@ -17,7 +17,7 @@ for v in $VERSIONS; do
   python setup.py bdist_wheel
   python setup.py sdist
   python -m mkdocs build -d site/$MAIN_VERSION
-  #twine upload dist/lightkube_models-${v}.*-py3-none-any.whl -r $1
-  ls dist/lightkube_models-${v}.*-py3-none-any.whl
-  ls dist/lightkube-models-${v}.*.tar.gz
+  #twine upload dist/lightkube_models-pydantic-${v}.*-py3-none-any.whl -r $1
+  ls dist/lightkube_models-pydantic-${v}.*-py3-none-any.whl
+  ls dist/lightkube-models-pydantic-${v}.*.tar.gz
 done

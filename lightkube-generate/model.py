@@ -102,6 +102,7 @@ class Model:
                 elif defi['format'] == 'int-or-string':
                     self.type = 'Union[int, str]'
                     self.import_module = Import('typing', 'Union')
+        self.internal_dependencies = self.get_internal_dependencies()
 
     @property
     def has_properties(self):
@@ -145,3 +146,19 @@ class Model:
         if 'type' in defi:
             return self.OAS_TO_PY[defi['type']]
 
+    def get_internal_dependencies(self):
+        if not self.has_properties:
+            return []
+
+        deps = []
+        for p in self.properties:
+            if p.import_module and p.import_module.module == self.module:
+                t = p.type
+                # List[p.type] should be p.type
+                if t.startswith('List['):
+                    t = t[5:-1]
+
+                if t != self.name:
+                    deps.append(t)
+
+        return list(set(deps))
