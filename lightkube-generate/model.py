@@ -132,7 +132,7 @@ class Model:
 
     def to_pytype(self, defi, required=True):
         if not required:
-            return self.to_pytype(defi)
+            return f'Optional[{self.to_pytype(defi)}]'
         if 'items' in defi:
             return f'List[{self.to_pytype(defi["items"])}]'
 
@@ -154,6 +154,9 @@ class Model:
         for p in self.properties:
             if p.import_module and p.import_module.module == self.module:
                 t = p.type
+                if t.startswith('Optional['):
+                    t = t[9:-1]
+
                 # List[p.type] should be p.type
                 if t.startswith('List['):
                     t = t[5:-1]
